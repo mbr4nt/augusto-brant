@@ -1,0 +1,80 @@
+<dom-module id="asi-gallery-item">
+
+	<style>
+		:host {
+			display: block;
+			position: relative;
+		}
+
+		:host {
+			flex: 0 1 auto;
+			width: 31%;
+			margin-bottom:2%;
+			cursor: pointer;
+		}
+
+		img {
+			width:100%;
+			max-width: 100%;
+			height:auto;
+			-webkit-user-select: none;
+			user-drag: none;
+
+		}
+
+		paper-ripple {
+			color:var(--asi-color-accent-primary);
+			/*color: #2C9F93;*/
+			overflow:hidden;
+		}
+
+		:host([empty]) {
+			cursor: default;
+			margin-bottom:0;
+		}
+
+		:host([empty]) img {
+			display:none;
+		}
+
+		:host([empty]) paper-ripple {
+			display:none;
+		}
+
+		/* Firefox doesn't like the 2% */
+		@-moz-document url-prefix() {
+			:host { margin-bottom:15px; }
+		}
+
+	    /* Small Devices, Tablets */
+	    @media only screen and (min-width : 768px) {
+			:host { width:23%; }
+	    }
+
+	    /* Medium Devices, Desktops */
+	    @media only screen and (min-width : 992px) {
+			:host { width: 15%; }
+	    }
+
+	</style>
+
+	<template>
+		<img src="{{src}}"/>
+		<paper-ripple on-click="handleClick"></paper-ripple>
+	</template>
+
+</dom-module>
+
+<script>
+	Polymer({
+		is: "asi-gallery-item",
+		properties: {
+			src: String,
+			wid: String,
+			hei: String
+		},
+		handleClick: function () {
+			this.fire('image-click', this.src);
+		}
+	});
+</script>

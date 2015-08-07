@@ -1,0 +1,230 @@
+<dom-module id="asi-gallery">
+
+	<style>
+		:host {
+			display: block;
+		}
+
+		.pswp__share-tooltip a:hover {
+			background-color: var(--asi-color-accent-primary);
+			color: var(--asi-white);
+		}
+
+		.flex-container {
+			display:flex;
+
+			flex-wrap: wrap;
+			align-content: space-between;
+			justify-content:space-between;
+
+			width:100%;
+			height:auto;
+
+			display:-ms-flexbox;
+			-ms-flex-wrap: wrap;
+			-ms-flex-pack:justify;
+
+			display:-webkit-flex;
+			-webkit-align-content:space-between;
+			-webkit-justify-content:space-between;
+			-webkit-flex-flow:row wrap;
+		}
+
+	    /* Small Devices, Tablets */
+	    @media only screen and (min-width : 768px) {
+			.flex-container { width:720px; }
+	    }
+
+	    /* Medium Devices, Desktops */
+	    @media only screen and (min-width : 992px) {
+			.flex-container { width:940px; }
+	    }
+
+	    /* Large Devices, Wide Screens */
+	    @media only screen and (min-width : 1200px) {
+			.flex-container { width:1140px; }
+	    }
+
+		.pswp__button--share,
+		.pswp__button--close {
+			background:none!important;
+			color:var(--asi-white);
+			font-size:16px;
+			padding-top:6px;
+		}
+		.pswp__button--close {
+			padding-top:4px;
+		}
+
+	</style>
+
+	<!-- These have to be imported normally for now, photoswipe doens't like it when
+		Polymer modifies the selectors -->
+	<link rel="stylesheet" href="../bower_components/photoswipe/dist/photoswipe.css">
+	<link rel="stylesheet" href="../bower_components/photoswipe/dist/default-skin/default-skin.css">
+
+	<script src="../bower_components/photoswipe/dist/photoswipe.min.js"></script>
+	<script src="../bower_components/photoswipe/dist/photoswipe-ui-default.min.js"></script>
+
+	<template>
+
+		<div class="flex-container">
+			<content id="images"></content>
+			<!-- Make sure that we have the spacing -->
+			<asi-gallery-item empty></asi-gallery-item>
+			<asi-gallery-item empty></asi-gallery-item>
+			<asi-gallery-item empty></asi-gallery-item>
+			<asi-gallery-item empty></asi-gallery-item>
+			<asi-gallery-item empty></asi-gallery-item>
+		</div>
+
+		<div id="photoswipe" class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+		    <div class="pswp__bg"></div>
+
+		    <div class="pswp__scroll-wrap">
+
+		        <div class="pswp__container">
+		            <div class="pswp__item"></div>
+		            <div class="pswp__item"></div>
+		            <div class="pswp__item"></div>
+		        </div>
+
+		        <div class="pswp__ui pswp__ui--hidden">
+
+		            <div class="pswp__top-bar">
+
+		                <div class="pswp__counter"></div>
+
+		                <button class="pswp__button pswp__button--close fa fa-times" title="Close (Esc)"></button>
+
+		                <button class="pswp__button pswp__button--share fa fa-download" title="Download"></button>
+
+		                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+		                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+		                <div class="pswp__preloader">
+		                    <div class="pswp__preloader__icn">
+		                      <div class="pswp__preloader__cut">
+		                        <div class="pswp__preloader__donut"></div>
+		                      </div>
+		                    </div>
+		                </div>
+		            </div>
+
+		            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+		                <div class="pswp__share-tooltip"></div>
+		            </div>
+
+		            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+		            </button>
+
+		            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+		            </button>
+
+		            <div class="pswp__caption">
+		                <div class="pswp__caption__center"></div>
+		            </div>
+
+		        </div>
+
+		    </div>
+
+		</div>
+
+	</template>
+
+</dom-module>
+
+<script>
+
+	Polymer({
+		is: "asi-gallery",
+		listeners: {
+			'image-click':'openPhotoSwipe'
+		},
+		properties: {
+			items: {
+				type: Array,
+				value: []
+			},
+			rawItems: {
+				type: Array,
+				value: []
+			}
+		},
+		openPhotoSwipe: function (e) {
+			var polySelf = this;
+			var index = this._loadItems( e.detail );
+
+			var pswpElement = this.$.photoswipe;
+			var children = this.getContentChildren();
+			var options = {
+			    index: index,
+				showHideOpacity:true,
+
+				getThumbBoundsFn : function (index) {
+					// find thumbnail element
+					var thumbnail = children[index];
+					// get window scroll Y
+					var pageYScroll = window.pageYOffset || document.documentElement.scrollTop;
+					// optionally get horizontal scroll
+					// get position of element relative to viewport
+					var rect = thumbnail.getBoundingClientRect();
+					// w = width
+					return {x:rect.left, y:rect.top + pageYScroll, w:rect.width};
+				},
+				shareButtons: [
+					// { id: 'small', label: 'Small', url: 'http://www.google.com', download: true },
+					// { id: 'medium', label: 'Medium', url: 'http://www.google.com', download: true },
+					// { id: 'large', label: 'Large', url: 'http://www.google.com', download: true },
+					{ id: 'download', label: 'Full Size', url: '{{raw_image_url}}', download: true },
+				]
+			};
+
+			var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, this.items, options);
+
+			// gallery.listen('shareLinkClick', function(e, target) {
+			    // e - original click event
+			    // target - link that was clicked
+
+			    // If `target` has `href` attribute and
+			    // does not have `download` attribute -
+			    // share modal window will popup
+			// });
+
+			gallery.listen('close', function () {
+				polySelf.fire('gallery-close');
+			});
+
+			gallery.init();
+
+			this.fire('gallery-open');
+			this.scopeSubtree(this.$.photoswipe, true);
+		},
+		_loadItems: function ( selSrc ) {
+			var index = 0;
+			this.items = [];
+			this.rawItems = [];
+			// if ( this.items.length == 0 ) {
+				var children = this.getContentChildren();
+				for( var i = 0; i < children.length; i++ ) {
+					var src = children[i].src;
+					var wid = children[i].wid;
+					var hei = children[i].hei;
+
+					if ( !src ) continue;
+
+					this.rawItems.push( src );
+					this.items.push( {
+						src: src,
+						w: wid,
+						h: hei
+					});
+					if ( src === selSrc ) index = i;
+				}
+			// }
+			return index;
+		}
+	});
+</script>
